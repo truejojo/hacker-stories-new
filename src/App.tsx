@@ -37,33 +37,34 @@ const App = () => {
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) =>
     setSearchTerm(event.target.value);
 
-  const searchStories = stories.filter(story => story.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  const searchStories = stories.filter((story) =>
+    story.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div>
       <h1>Hello World!</h1>
-      <Search onSearch={handleSearch} />
+      <Search search={searchTerm} onSearch={handleSearch} />
       <h2>My List</h2>
-      {
-        searchTerm.length > 0 && <List list={searchStories} />
-      }
+      {searchTerm.length > 0 && <List list={searchStories} />}
     </div>
   );
 };
 
 interface SearchProps {
+  search: string;
   onSearch: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
-const Search = ({ onSearch }: SearchProps) => (
+const Search = ({ search, onSearch }: SearchProps) => (
   <div>
     <label htmlFor="search">Search: </label>
-    <input id="search" type="text" onChange={onSearch} />
+    <input id="search" type="text" value={search} onChange={onSearch} />
   </div>
 );
 
 const List = ({ list }: ListProps) => (
   <ul>
-    {list.map((item) => (
+    {list.map(( item ) => (
       <Item key={item.objectID} {...item} />
     ))}
   </ul>
