@@ -1,4 +1,10 @@
-import * as React from "react";
+import React, {
+  useState,
+  useReducer,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 import axios from "axios";
 
 type Story = {
@@ -11,46 +17,45 @@ type Story = {
 };
 
 type Stories = Story[];
-
-type StoriesState = {
+interface State {
   data: Stories;
   isLoading: boolean;
   isError: boolean;
-};
+}
 
-type StoriesInitAction = {
-  type: "STORIES_FETCH_INIT";
-};
+enum ActionTypes {
+  STORIES_FETCH_INIT,
+  STORIES_FETCH_SUCCESS,
+  STORIES_FETCH_FAILURE,
+  REMOVE_STORY,
+}
 
-type StoriesSetAction = {
-  type: "STORIES_FETCH_SUCCESS";
-  payload: Stories;
-};
+type Action =
+  | {
+      type: ActionTypes.STORIES_FETCH_INIT;
+    }
+  | {
+      type: ActionTypes.STORIES_FETCH_SUCCESS;
+      payload: Stories;
+    }
+  | {
+      type: ActionTypes.STORIES_FETCH_FAILURE;
+    }
+  | {
+      type: ActionTypes.REMOVE_STORY;
+      payload: Story;
+    };
 
-type StoriesRemoveAction = {
-  type: "REMOVE_STORY";
-  payload: Story;
-};
-type StoriesFailureAction = {
-  type: "STORIES_FETCH_FAILURE";
-};
-
-type StoriesAction =
-  | StoriesInitAction
-  | StoriesSetAction
-  | StoriesRemoveAction
-  | StoriesFailureAction;
-
-const storiesReducer = (state: StoriesState, action: StoriesAction) => {
+const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case "STORIES_FETCH_INIT":
+    case ActionTypes.STORIES_FETCH_INIT:
       return {
         ...state,
         isLoading: true,
         isError: false,
       };
 
-    case "STORIES_FETCH_SUCCESS":
+    case ActionTypes.STORIES_FETCH_SUCCESS:
       return {
         ...state,
         isLoading: false,
@@ -58,14 +63,14 @@ const storiesReducer = (state: StoriesState, action: StoriesAction) => {
         data: action.payload,
       };
 
-    case "STORIES_FETCH_FAILURE":
+    case ActionTypes.STORIES_FETCH_FAILURE:
       return {
         ...state,
         isLoading: false,
         isError: true,
       };
 
-    case "REMOVE_STORY":
+    case ActionTypes.REMOVE_STORY:
       return {
         ...state,
         data: state.data.filter(
@@ -78,15 +83,19 @@ const storiesReducer = (state: StoriesState, action: StoriesAction) => {
   }
 };
 
+const initialState: State = {
+    data: [],
+    isLoading: false,
+    isError: false,
+}
+
 const useStorageState = (
   key: string,
   initialState: string
 ): [string, (newValue: string) => void] => {
-  const [value, setValue] = React.useState(
-    localStorage.getItem(key) || initialState
-  );
+  const [value, setValue] = useState(localStorage.getItem(key) || initialState);
 
-  React.useEffect(() => {
+  useEffect(() => {
     localStorage.setItem(key, value);
   }, [value, key]);
 
@@ -96,36 +105,33 @@ const useStorageState = (
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 
 const App = () => {
-  const [stories, dispatchStories] = React.useReducer(storiesReducer, {
-    data: [],
-    isLoading: false,
-    isError: false,
-  });
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [searchTerm, setSearchTerm] = useStorageState("search", "React");
-  const [url, setUrl] = React.useState(`${API_ENDPOINT}${searchTerm}`);
+  const [url, setUrl] = useState(`${API_ENDPOINT}${searchTerm}`);
+  const {data, isLoading, isError} = state;
 
-  const handleFetchStories = React.useCallback(async () => {
-    dispatchStories({ type: "STORIES_FETCH_INIT" });
+  const handleFetchStories = useCallback(async () => {
+    dispatch({ type: ActionTypes.STORIES_FETCH_INIT });
 
     try {
       const result = await axios.get(url);
 
-      dispatchStories({
-        type: "STORIES_FETCH_SUCCESS",
+      dispatch({
+        type: ActionTypes.STORIES_FETCH_SUCCESS,
         payload: result.data.hits,
       });
     } catch {
-      dispatchStories({ type: "STORIES_FETCH_FAILURE" });
+      dispatch({ type: ActionTypes.STORIES_FETCH_FAILURE });
     }
   }, [url]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     handleFetchStories();
   }, [handleFetchStories]);
 
   const handleRemoveStory = (item: Story) => {
-    dispatchStories({
-      type: "REMOVE_STORY",
+    dispatch({
+      type: ActionTypes.REMOVE_STORY,
       payload: item,
     });
   };
@@ -151,12 +157,12 @@ const App = () => {
 
       <hr />
 
-      {stories.isError && <p>Something went wrong ...</p>}
+      {isError && <p>Something went wrong ...</p>}
 
-      {stories.isLoading ? (
+      {isLoading ? (
         <p>Loading ...</p>
       ) : (
-        <List list={stories.data} onRemoveItem={handleRemoveStory} />
+        <List list={data} onRemoveItem={handleRemoveStory} />
       )}
     </div>
   );
@@ -202,9 +208,9 @@ const InputWithLabel: React.FC<InputWithLabelProps> = ({
   isFocused,
   children,
 }) => {
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isFocused && inputRef.current) {
       inputRef.current.focus();
     }
