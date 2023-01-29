@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import axios from "axios";
 
-type Story = {
+interface Story {
   objectID: number;
   url: string;
   title: string;
@@ -43,7 +43,7 @@ type Action =
     }
   | {
       type: ActionTypes.REMOVE_STORY;
-      payload: Story;
+      payload: number;
     };
 
 const reducer = (state: State, action: Action): State => {
@@ -74,7 +74,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         data: state.data.filter(
-          (story) => action.payload.objectID !== story.objectID
+          (story) => action.payload !== story.objectID
         ),
       };
 
@@ -129,10 +129,10 @@ const App = () => {
     handleFetchStories();
   }, [handleFetchStories]);
 
-  const handleRemoveStory = (item: Story) => {
+  const handleRemoveStory = (id: number) => {
     dispatch({
       type: ActionTypes.REMOVE_STORY,
-      payload: item,
+      payload: id,
     });
   };
 
@@ -200,14 +200,14 @@ type InputWithLabelProps = {
   children: React.ReactNode;
 };
 
-const InputWithLabel: React.FC<InputWithLabelProps> = ({
+const InputWithLabel = ({
   id,
   value,
   type = "text",
   onInputChange,
   isFocused,
   children,
-}) => {
+}: InputWithLabelProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -230,34 +230,33 @@ const InputWithLabel: React.FC<InputWithLabelProps> = ({
   );
 };
 
-type ListProps = {
+interface ListProps {
   list: Stories;
-  onRemoveItem: (item: Story) => void;
+  onRemoveItem: (item: number) => void;
 };
 
-const List: React.FC<ListProps> = ({ list, onRemoveItem }) => (
+const List = ({ list, onRemoveItem }: ListProps) => (
   <ul>
     {list.map((item) => (
-      <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem} />
+      <Item key={item.objectID} {...item} onRemoveItem={onRemoveItem} />
     ))}
   </ul>
 );
 
-type ItemProps = {
-  item: Story;
-  onRemoveItem: (item: Story) => void;
+interface ItemProps extends Story {
+  onRemoveItem: (item: number) => void;
 };
 
-const Item: React.FC<ItemProps> = ({ item, onRemoveItem }) => (
+const Item= ({objectID, url, title, author, num_comments, points, onRemoveItem }: ItemProps) => (
   <li>
     <span>
-      <a href={item.url}>{item.title}</a>
+      <a href={url}>{title}</a>
     </span>
-    <span>{item.author}</span>
-    <span>{item.num_comments}</span>
-    <span>{item.points}</span>
+    <span>{author}</span>
+    <span>{num_comments}</span>
+    <span>{points}</span>
     <span>
-      <button type="button" onClick={() => onRemoveItem(item)}>
+      <button type="button" onClick={() => onRemoveItem(objectID)}>
         Dismiss
       </button>
     </span>
