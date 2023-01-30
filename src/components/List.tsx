@@ -19,4 +19,6 @@ export default List;
 
 const Ul = styled.ul`
   padding-left: 0;
+  display: grid;
+  gap: .5rem;
 `;
