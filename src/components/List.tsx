@@ -1,6 +1,6 @@
 import { Stories } from "../pages/Hackernews";
 import Item from "./Item";
-
+import styled from "styled-components";
 
 interface ListProps {
   list: Stories;
@@ -8,11 +8,15 @@ interface ListProps {
 }
 
 const List = ({ list, onRemoveItem }: ListProps) => (
-  <ul>
+  <Ul>
     {list.map((item) => (
       <Item key={item.objectID} {...item} onRemoveItem={onRemoveItem} />
     ))}
-  </ul>
+  </Ul>
 );
 
 export default List;
+
+const Ul = styled.ul`
+  padding-left: 0;
+`;

@@ -3,7 +3,7 @@ import axios from "axios";
 import useStorageState from "../hooks/useStorageState";
 import SearchForm from "../components/SearchForm";
 import List from "../components/List";
-
+import styled from "styled-components";
 export interface Story {
   objectID: number;
   url: string;
@@ -129,8 +129,8 @@ const Hackernews = () => {
   };
 
   return (
-    <div>
-      <h1>My Hacker Stories</h1>
+    <Container>
+      <Headline>My Hacker Stories</Headline>
 
       <SearchForm
         searchTerm={searchTerm}
@@ -147,8 +147,22 @@ const Hackernews = () => {
       ) : (
         <List list={data} onRemoveItem={handleRemoveStory} />
       )}
-    </div>
+    </Container>
   );
 };
 
+// Styles
+const Container = styled.div`
+  min-height: 100vw;
+  width: 90%;
+  max-width: 1200px;
+  margin-inline: auto;
+ 
+  color: #171212;
+`;
+const Headline = styled.h1`
+  font-size: 48px;
+  font-weight: 300;
+  letter-spacing: 2px;
+`;
 export default Hackernews;
