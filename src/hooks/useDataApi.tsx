@@ -1,8 +1,9 @@
 import { useEffect, useState, useReducer } from "react";
 import axios from "axios";
+import { IInitialStories } from "../pages/Hackernews";
 
 export interface NewState {
-  data: { hits: [] };
+  data: IInitialStories;
   isLoading: boolean;
   isError: boolean;
 }
@@ -19,7 +20,7 @@ type Action =
     }
   | {
       type: ActionTypes.FETCH_SUCCESS;
-      payload: { hits: [] };
+      payload: IInitialStories;
     }
   | {
       type: ActionTypes.FETCH_FAILURE;
@@ -54,7 +55,7 @@ const reducer = (state: NewState, action: Action) => {
   }
 };
 
-const useDataApi = (initialUrl: string, initialData: { hits: [] }) => {
+const useDataApi = (initialUrl: string, initialData: IInitialStories) => {
   const [url, setUrl] = useState(initialUrl);
   const [state, dispatch] = useReducer(reducer, {
     isLoading: false,
