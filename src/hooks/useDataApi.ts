@@ -1,9 +1,8 @@
 import { useEffect, useState, useReducer } from "react";
 import axios from "axios";
-import { IInitialStories } from "../pages/Hackernews";
 
-export interface NewState {
-  data: IInitialStories;
+export interface State<T> {
+  data: T;
   isLoading: boolean;
   isError: boolean;
 }
@@ -14,19 +13,22 @@ enum ActionTypes {
   FETCH_FAILURE,
 }
 
-type Action =
+type Action<T> =
   | {
       type: ActionTypes.FETCH_INIT;
     }
   | {
       type: ActionTypes.FETCH_SUCCESS;
-      payload: IInitialStories;
+      payload: T;
     }
   | {
       type: ActionTypes.FETCH_FAILURE;
     };
 
-const reducer = (state: NewState, action: Action) => {
+const reducer = <T extends unknown>(
+  state: State<T>,
+  action: Action<T>
+): State<T> => {
   switch (action.type) {
     case ActionTypes.FETCH_INIT:
       return {
@@ -55,13 +57,14 @@ const reducer = (state: NewState, action: Action) => {
   }
 };
 
-const useDataApi = (initialUrl: string, initialData: IInitialStories) => {
+const useDataApi = <T extends unknown>(initialUrl: string, initialData: T) => {
   const [url, setUrl] = useState(initialUrl);
   const [state, dispatch] = useReducer(reducer, {
     isLoading: false,
     isError: false,
     data: initialData,
   });
+  const { isLoading, isError, data } = state;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,7 +73,10 @@ const useDataApi = (initialUrl: string, initialData: IInitialStories) => {
       try {
         const result = await axios(url);
 
-        dispatch({ type: ActionTypes.FETCH_SUCCESS, payload: result.data });
+        dispatch({
+          type: ActionTypes.FETCH_SUCCESS,
+          payload: result.data as T,
+        });
       } catch (error) {
         dispatch({ type: ActionTypes.FETCH_FAILURE });
       }
@@ -79,6 +85,7 @@ const useDataApi = (initialUrl: string, initialData: IInitialStories) => {
     fetchData();
   }, [url]);
 
+  // return [isLoading, isError, data, setUrl];
   return { state, setUrl };
 };
 

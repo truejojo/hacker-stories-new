@@ -1,8 +1,8 @@
+import useDataApi from "../hooks/useDataApi";
 import useStorageState from "../hooks/useStorageState";
 import SearchForm from "../components/SearchForm";
 import List from "../components/List";
 import styled from "styled-components";
-import useDataApi from "../hooks/useDataApi";
 
 export interface Story {
   objectID: number;
@@ -17,14 +17,14 @@ export type Stories = Story[];
 
 const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
 export interface IInitialStories {
-  hits: Story[];
+  hits: Stories;
 }
 const initialData: IInitialStories = {
   hits: [],
 };
 
 const Hackernews = () => {
-  const { state, setUrl } = useDataApi(API_ENDPOINT, initialData);
+  const { state, setUrl } = useDataApi<IInitialStories>(API_ENDPOINT, initialData);
   const [query, setQuery] = useStorageState("search", "react");
   const { data, isLoading, isError } = state;
 
