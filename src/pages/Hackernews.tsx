@@ -24,9 +24,8 @@ const initialData: IInitialStories = {
 };
 
 const Hackernews = () => {
-  const { state, setUrl } = useDataApi<IInitialStories>(API_ENDPOINT, initialData);
+  const { data, isLoading, isError, setUrl } = useDataApi<IInitialStories>(API_ENDPOINT, initialData);
   const [query, setQuery] = useStorageState("search", "react");
-  const { data, isLoading, isError } = state;
 
   const handleRemoveStory = () => {};
 

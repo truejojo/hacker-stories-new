@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer } from "react";
+import { useEffect, useState, useReducer, Reducer } from "react";
 import axios from "axios";
 
 export interface State<T> {
@@ -25,7 +25,7 @@ type Action<T> =
       type: ActionTypes.FETCH_FAILURE;
     };
 
-const reducer = <T extends unknown>(
+const reducer = <T,>(
   state: State<T>,
   action: Action<T>
 ): State<T> => {
@@ -57,14 +57,13 @@ const reducer = <T extends unknown>(
   }
 };
 
-const useDataApi = <T extends unknown>(initialUrl: string, initialData: T) => {
+const useDataApi = <T,>(initialUrl: string, initialData: T) => {
   const [url, setUrl] = useState(initialUrl);
-  const [state, dispatch] = useReducer(reducer, {
+  const [state, dispatch] = useReducer<Reducer<State<T>, Action<T>>>(reducer, {
     isLoading: false,
     isError: false,
     data: initialData,
   });
-  const { isLoading, isError, data } = state;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,7 +74,7 @@ const useDataApi = <T extends unknown>(initialUrl: string, initialData: T) => {
 
         dispatch({
           type: ActionTypes.FETCH_SUCCESS,
-          payload: result.data as T,
+          payload: result.data,
         });
       } catch (error) {
         dispatch({ type: ActionTypes.FETCH_FAILURE });
@@ -85,8 +84,7 @@ const useDataApi = <T extends unknown>(initialUrl: string, initialData: T) => {
     fetchData();
   }, [url]);
 
-  // return [isLoading, isError, data, setUrl];
-  return { state, setUrl };
+  return {...state, setUrl};
 };
 
 export default useDataApi;
